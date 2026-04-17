@@ -3,6 +3,9 @@
 from sqlalchemy.orm import Session
  
 from app.models.post import Post
+from app.models.like import Like
+from sqlalchemy import func
+
 
 def create_post(db:Session,title:str,content:str,author_id:int):
     new_post = Post(title=title,content=content,author_id=author_id)
@@ -13,8 +16,18 @@ def create_post(db:Session,title:str,content:str,author_id:int):
     return new_post
 
 
-def get_posts(db:Session):
-    return db.query(Post).all()
+def get_posts_with_likes(db):
+    results = (
+        db.query(
+            Post,
+            func.count(Like.id).label("like_count")
+        )
+        .outerjoin(Like, Like.post_id == Post.id)
+        .group_by(Post.id)
+        .all()
+    )
+
+    return results
 
 
 def get_post_by_id(db:Session,post_id:int):

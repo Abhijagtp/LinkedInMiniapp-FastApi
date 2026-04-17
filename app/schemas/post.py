@@ -14,6 +14,7 @@ class PostResponseSchema(BaseModel):
     content: str
     author_id: int
     created_at: datetime
+    like_count: int 
 
     class Config:
         from_attributes = True

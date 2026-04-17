@@ -1,0 +1,80 @@
+# -------------------------
+# Python
+# -------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+
+# -------------------------
+# Virtual Environment
+# -------------------------
+venv/
+env/
+ENV/
+.venv/
+
+# -------------------------
+# Environment Variables
+# -------------------------
+.env
+.env.*
+*.env
+
+# -------------------------
+# IDE / Editor
+# -------------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# -------------------------
+# OS Files
+# -------------------------
+.DS_Store
+Thumbs.db
+
+# -------------------------
+# Logs
+# -------------------------
+*.log
+
+# -------------------------
+# Database
+# -------------------------
+*.sqlite3
+*.db
+
+# -------------------------
+# Alembic
+# -------------------------
+alembic/versions/*.pyc
+alembic/versions/__pycache__/
+
+# (IMPORTANT: keep migration files, ignore only cache)
+
+# -------------------------
+# Static / Media (if added later)
+# -------------------------
+static/
+media/
+
+# -------------------------
+# Testing / Coverage
+# -------------------------
+.coverage
+htmlcov/
+.pytest_cache/
+
+# -------------------------
+# Build / Distribution
+# -------------------------
+build/
+dist/
+*.egg-info/
+
+# -------------------------
+# Misc
+# -------------------------
+*.bak
+*.tmp

@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from app.schemas.post import CreatePostSchema, UpdatePostSchema, PostResponseSchema
 from app.services.post import (
     create_post as create_post_service,
-    get_posts,
+    get_posts_with_likes,
     get_post_by_id,
     update_post as update_post_service,
     # delete_post
@@ -23,8 +23,22 @@ def create_post(data:CreatePostSchema,db:Session = Depends(get_db),user = Depend
     return post
 
 @router.get("/get-posts",response_model=list[PostResponseSchema])
-def get_all_posts(db:Session = Depends(get_db)):
-    return get_posts(db)
+def get_all_posts(db: Session = Depends(get_db)):
+    results = get_posts_with_likes(db)
+
+    response = []
+
+    for post, like_count in results:
+        response.append({
+            "id": post.id,
+            "title": post.title,
+            "content": post.content,
+            "author_id": post.author_id,
+            "like_count": like_count,
+            "created_at": post.created_at
+        })
+
+    return response
 
 @router.get("/get-posts/{post_id}",response_model=PostResponseSchema)
 def get_post(post_id:int, db:Session = Depends(get_db)):
