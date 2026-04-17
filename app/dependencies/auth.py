@@ -33,6 +33,7 @@ def get_current_user(
     db: Session = Depends(get_db)
 ):
     payload = decode_token(token)
+    print (payload)
 
     user_id = payload.get("sub")
 
