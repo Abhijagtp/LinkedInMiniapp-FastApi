@@ -15,9 +15,17 @@ class PostResponseSchema(BaseModel):
     author_id: int
     created_at: datetime
     like_count: int 
+    is_liked:bool
 
     class Config:
         from_attributes = True
+
+class PaginatedPostResponse(BaseModel):
+    total: int
+    posts: list[PostResponseSchema]
+    limit: int
+    offset: int
+
 
 class PostUpdateRequest(BaseModel):
     id: int

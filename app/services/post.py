@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
  
 from app.models.post import Post
 from app.models.like import Like
-from sqlalchemy import func
+from sqlalchemy import func ,exists
 
 
 def create_post(db:Session,title:str,content:str,author_id:int):
@@ -16,18 +16,33 @@ def create_post(db:Session,title:str,content:str,author_id:int):
     return new_post
 
 
-def get_posts_with_likes(db):
+def get_posts_with_likes(db,user_id,limit=10,offset=0):
+    is_liked = (
+        db.query(Like.id)
+        .filter(
+            Like.user_id == user_id,
+            Like.post_id == Post.id
+        )
+        .correlate(Post)
+        .exists()
+    )
+    total = db.query(func.count(Post.id)).scalar()
+    
     results = (
         db.query(
             Post,
-            func.count(Like.id).label("like_count")
+            func.count(Like.id).label("like_count"),
+            is_liked.label("is_liked")
         )
         .outerjoin(Like, Like.post_id == Post.id)
         .group_by(Post.id)
+        .limit(limit)
+        .offset(offset)
         .all()
+    
     )
 
-    return results
+    return total,results
 
 
 def get_post_by_id(db:Session,post_id:int):

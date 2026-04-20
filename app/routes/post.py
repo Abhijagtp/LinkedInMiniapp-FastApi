@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException,Query
 from sqlalchemy.orm import Session
 
-from app.schemas.post import CreatePostSchema, UpdatePostSchema, PostResponseSchema
+from app.schemas.post import CreatePostSchema, UpdatePostSchema, PostResponseSchema,PaginatedPostResponse
 from app.services.post import (
     create_post as create_post_service,
     get_posts_with_likes,
@@ -11,6 +11,7 @@ from app.services.post import (
 )
 from app.dependencies.db import get_db
 from app.dependencies.auth import get_current_user
+from app.dependencies.roles import require_role, require_user_type
 
 router = APIRouter(prefix="/posts", tags=["Posts"])
 
@@ -18,27 +19,40 @@ router = APIRouter(prefix="/posts", tags=["Posts"])
 
 
 @router.post("/create-post",response_model=PostResponseSchema)
-def create_post(data:CreatePostSchema,db:Session = Depends(get_db),user = Depends(get_current_user)):
+def create_post(data:CreatePostSchema,db:Session = Depends(get_db),user = Depends(require_user_type(["teacher"]))):
     post = create_post_service(db,data.title,data.content,author_id=user.id)
     return post
 
-@router.get("/get-posts",response_model=list[PostResponseSchema])
-def get_all_posts(db: Session = Depends(get_db)):
-    results = get_posts_with_likes(db)
+@router.get("/get-posts",response_model=PaginatedPostResponse)
+def get_all_posts( 
+    db: Session = Depends(get_db),
+    user = Depends(get_current_user),
+    limit:int= Query(10,ge=1,le=50),
+    offset:int = Query(0,ge=0)
+                  ):
+    
+    total,results = get_posts_with_likes(db,user.id,limit,offset)
 
     response = []
 
-    for post, like_count in results:
+    for post, like_count,is_liked in results:
         response.append({
             "id": post.id,
             "title": post.title,
             "content": post.content,
             "author_id": post.author_id,
             "like_count": like_count,
+            "is_liked":is_liked,
             "created_at": post.created_at
         })
 
-    return response
+    return {
+        "total":total,
+        "posts":response,
+        "limit":limit,
+        "offset":offset
+
+    }
 
 @router.get("/get-posts/{post_id}",response_model=PostResponseSchema)
 def get_post(post_id:int, db:Session = Depends(get_db)):
