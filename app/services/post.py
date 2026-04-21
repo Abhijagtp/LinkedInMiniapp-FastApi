@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
  
 from app.models.post import Post
 from app.models.like import Like
+from app.models.comment import Comment
 from sqlalchemy import func ,exists
 
 
@@ -28,21 +29,49 @@ def get_posts_with_likes(db,user_id,limit=10,offset=0):
     )
     total = db.query(func.count(Post.id)).scalar()
     
-    results = (
+    posts = (
         db.query(
             Post,
             func.count(Like.id).label("like_count"),
             is_liked.label("is_liked")
         )
         .outerjoin(Like, Like.post_id == Post.id)
-        .group_by(Post.id)
+        .group_by(Post.id,
+                  Post.title,
+                  Post.content,
+                  Post.author_id,
+                  Post.created_at,
+                  )
+        .order_by(Post.created_at.desc())
         .limit(limit)
         .offset(offset)
         .all()
-    
     )
+    
+    response =  []
+    for post , like_count, is_liked in posts:
+        comments = (
+            db.query(Comment)
+            .filter(Comment.post_id == post.id)
+            .order_by(Comment.created_at.desc())
+            .limit(2)
+            .all()
+        )
+        
 
-    return total,results
+        response.append({
+            "id":post.id,
+            "title":post.title,
+            "content":post.content,
+            "author_id":post.author_id,
+            "like_count":like_count,
+            "is_liked":is_liked,
+            "created_at":post.created_at,
+            "comments":comments
+
+        })
+
+    return total,response
 
 
 def get_post_by_id(db:Session,post_id:int):

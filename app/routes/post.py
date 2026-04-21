@@ -33,25 +33,11 @@ def get_all_posts(
     
     total,results = get_posts_with_likes(db,user.id,limit,offset)
 
-    response = []
-
-    for post, like_count,is_liked in results:
-        response.append({
-            "id": post.id,
-            "title": post.title,
-            "content": post.content,
-            "author_id": post.author_id,
-            "like_count": like_count,
-            "is_liked":is_liked,
-            "created_at": post.created_at
-        })
-
     return {
         "total":total,
-        "posts":response,
+        "posts":results,
         "limit":limit,
         "offset":offset
-
     }
 
 @router.get("/get-posts/{post_id}",response_model=PostResponseSchema)

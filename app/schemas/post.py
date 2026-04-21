@@ -1,6 +1,9 @@
 from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
+from app.schemas.comment import CommentResponseSchema
+from typing import List
+
 
 
 class CreatePostSchema(BaseModel):
@@ -16,6 +19,7 @@ class PostResponseSchema(BaseModel):
     created_at: datetime
     like_count: int 
     is_liked:bool
+    comments:List[CommentResponseSchema]
 
     class Config:
         from_attributes = True
